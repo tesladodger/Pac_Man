@@ -83,26 +83,31 @@ class Pac {
         gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&  // Not in the tunnel
         grid[gridY + nextDir.y][gridX + nextDir.x] != 0 ) {   // Target is not a wall
       
-      // The vector that represents this turn.
-      int vx = dir.x + nextDir.x;
-      int vy = dir.y + nextDir.y;
+      // In the case of a reverse, just do it and return.
+      if ((dir.x == 0 && dir.y == -nextDir.y) || (dir.y == 0 && dir.x == -nextDir.x)) {
+        dir = nextDir;
+        float sX = dir.x * speed * spercent;
+        float sY = dir.y * speed * spercent;
+        PVector s = new PVector(sX, sY);
+        pos.add(s);
+        return 0;
+      }
       
       // Distance from the center of the tile.
-      float dfcx = (pos.x % 16) - 7;
-      float dfcy = (pos.y % 16) - 7;
+      float dfcx = 7 - (pos.x % 16);
+      float dfcy = 7 - (pos.y % 16);
+      int sdfcx = (int) Math.signum(dfcx);
+      int sdfcy = (int) Math.signum(dfcy);
       
-      // Center pac-man in the tile.
-      pos.x -= dfcx;
-      pos.y -= dfcy;
+      // Update the position.
+      pos.x += (abs(dir.x) * sdfcx + nextDir.x) * speed * spercent;
+      pos.y += (abs(dir.y) * sdfcy + nextDir.y) * speed * spercent;
       
-      // todo post turn is wrong
+      // If the centerline is reached, stop the turn.
+      if ( (dir.y == 0 && (dfcx < 1.5 && dfcx > -1.5)) || (dir.x == 0 && (dfcy < 1.5 && dfcy > -1.5)) ) {
+        dir = nextDir;
+      }
       
-      // Place him in the correct spot.
-      pos.x += dfcy * vx * -dir.y;
-      pos.y += dfcx * vy * -dir.x;
-      
-      // Change direction and return (don't move in the pre-turn frame).
-      dir = nextDir;
       return 0;
     }
 

@@ -13,7 +13,7 @@ class Pinky extends Ghost {
     if (pacdir == Dir.U) {
       chaseTarget.x -= 4;
     }
-    ellipse(chaseTarget.x*16+8, chaseTarget.y*16+8, 9, 9);
+    //ellipse(chaseTarget.x*16+8, chaseTarget.y*16+8, 9, 9);
   }
   
   public float speedPercentage () {

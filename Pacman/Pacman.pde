@@ -95,7 +95,7 @@ void setup () {
 void draw () {
   background(0);
   image(backgroundImage, 224, 288, width, height);
-  frameRate(10);
+  //frameRate(10);
 
   /* Logic */
   changeMode();

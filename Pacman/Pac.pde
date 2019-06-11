@@ -9,7 +9,7 @@ class Pac {
   private final PImage pacsprites = loadImage("pacman.png");
   private int ox; // x coordinate in the sprite sheet.
   private int oy; // y coordinate in the sprite sheet.
-  private boolean stopped; // this is only used for animation, not movement.
+  private boolean stopped;
 
 
   /* Movement variables */
@@ -20,6 +20,7 @@ class Pac {
   private Dir dir;
   // User defined direction.
   private Dir nextDir;
+  private int powerPelletStopCounter;
 
 
   Pac () {
@@ -29,14 +30,24 @@ class Pac {
     pos = new PVector(14*tileL, 26*tileL+8);
     dir = Dir.N;
     nextDir = Dir.N;
+    powerPelletStopCounter = 0;
   }
 
 
   /**
    * Checks the dot and pellet collisions, handles crossing the tunnel, turns and pre-turns,
    * stopping before a wall and moving.
+   *
+   * @return 0 if nothing happened, 1 if just ate a dot, 2 if just ate a power pellet;
    */
-  void move () {
+  int move () {
+    if (powerPelletStopCounter > 0) {
+      powerPelletStopCounter--;
+      return 0;
+    }
+    
+    stopped = false;
+    
     int gridX = floor(pos.x/tileL);
     int gridY = floor(pos.y/tileL);
 
@@ -44,7 +55,15 @@ class Pac {
     if (grid[gridY][gridX] == 1) {
       points += 10;
       grid[gridY][gridX] = 8;
-      return; // Stop moving for a frame when a dot is eaten.
+      // Stop moving for a frame when a dot is eaten.
+      return 1;
+    }
+    else if (grid[gridY][gridX] == 7) {
+      points += 50;
+      grid[gridY][gridX] = 8;
+      // Stop moving for 3 frames when a pp is eaten.
+      powerPelletStopCounter = 2;
+      return 2;
     }
 
     float spercent = speedPercentage();
@@ -53,45 +72,57 @@ class Pac {
     float nextX = pos.x + dir.x * speed * spercent;
     if (nextX < 0) {
       pos.x = width + nextX;
-      return;
+      return 0;
     } else if (nextX > width) {
       pos.x = nextX - width;
-      return;
+      return 0;
     }
 
-    /* Check if a turn can be made right now. */
-    // If the tile in the desired direction of movement is not a wall and if it's
-    // reasonlably in the middle of the tile (might remove this later).
-    if (gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&
-      grid[gridY + nextDir.y][gridX + nextDir.x] != 0 && 
-      (pos.x % tileL > 6.5 && pos.x % tileL < 9.5) && (pos.y % tileL > 6.5 && pos.y % tileL < 9.5)) {
-      // change direction
+    /* Check if it's in turn condition and do it (pre and post turn). */
+    if (dir != nextDir &&                                     // It's a turn
+        gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&  // Not in the tunnel
+        grid[gridY + nextDir.y][gridX + nextDir.x] != 0 ) {   // Target is not a wall
+      
+      // The vector that represents this turn.
+      int vx = dir.x + nextDir.x;
+      int vy = dir.y + nextDir.y;
+      
+      // Distance from the center of the tile.
+      float dfcx = (pos.x % 16) - 7;
+      float dfcy = (pos.y % 16) - 7;
+      
+      // Center pac-man in the tile.
+      pos.x -= dfcx;
+      pos.y -= dfcy;
+      
+      // todo post turn is wrong
+      
+      // Place him in the correct spot.
+      pos.x += dfcy * vx * -dir.y;
+      pos.y += dfcx * vy * -dir.x;
+      
+      // Change direction and return (don't move in the pre-turn frame).
       dir = nextDir;
+      return 0;
     }
-
-    /* Check if it's in pre-turn condition and start it. */
-
 
     /* Return if it's goind to hit a wall. */
-    if (floor( (pos.x + dir.x*8) /tileL) >= 0 && floor( (pos.x + dir.x*8) /tileL) <= 27 &&
-      grid[floor( (pos.y + dir.y*8) /tileL)][floor( (pos.x + dir.x*8) /tileL)] == 0) {
-      pos.x = pos.x - (pos.x % tileL) + 8;
-      pos.y = pos.y - (pos.y % tileL) + 8;
-      nextDir = Dir.N;
+    if (floor( (pos.x + dir.x*9) /tileL) >= 0 && floor( (pos.x + dir.x*9) /tileL) <= 27 &&
+      grid[floor( (pos.y + dir.y*9) /tileL)][floor( (pos.x + dir.x*9) /tileL)] == 0) {
       stopped = true;
       // make sure it doesn't stop with the mouth closed
       if (ox == 0) ox = 14;
-      return;
+      return 0;
     }
 
     /* Update pacman's position. */
-    if (dir != Dir.N) {
-      stopped = false;
-      float sX = dir.x * speed * spercent;
-      float sY = dir.y * speed * spercent;
-      PVector s = new PVector(sX, sY);
-      pos.add(s);
-    }
+      
+    float sX = dir.x * speed * spercent;
+    float sY = dir.y * speed * spercent;
+    PVector s = new PVector(sX, sY);
+    pos.add(s);
+    
+    return 0;
   }
 
 
@@ -119,8 +150,8 @@ class Pac {
    * Renders pacman and swaps the sprites.
    */
   void render () {
-
-    if (!stopped) {
+    
+    if (!stopped && !waitingInput) {
       swapSprite();
     }
 
@@ -129,10 +160,10 @@ class Pac {
     beginShape();
     texture(pacsprites);
 
-    vertex(-8, -8, ox, oy);
-    vertex(8, -8, ox+13, oy);
-    vertex(8, 8, ox+13, oy+13);
-    vertex(-8, 8, ox, oy+13);
+    vertex(-10, -10, ox, oy);
+    vertex(10, -10, ox+13, oy);
+    vertex(10, 10, ox+13, oy+13);
+    vertex(-10, 10, ox, oy+13);
 
     endShape();
     popMatrix();

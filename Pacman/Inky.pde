@@ -16,7 +16,7 @@ class Inky extends Ghost {
   }
   
   public int currentDotLimit () {
-    return 1;
+    return 0;
   }
   
 }

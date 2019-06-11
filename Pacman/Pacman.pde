@@ -68,7 +68,7 @@ Ghost[] ghosts;
 
 void setup () {
   size(448, 576, P2D);
-  backgroundImage = loadImage("maze.png");
+  backgroundImage = loadImage("maze2.png");
   textureMode(IMAGE);
   imageMode(CENTER);
   ellipseMode(CENTER);
@@ -94,14 +94,15 @@ void setup () {
 
 void draw () {
   background(0);
-  image(backgroundImage, 224, 296, width, 496);
-
+  image(backgroundImage, 224, 288, width, height);
+  frameRate(10);
 
   /* Logic */
   changeMode();
   pac.move();
   ghosts[0].updateTarget(pac.pos, pac.dir);
   ghosts[0].move();
+  ghosts[1].updateTarget(pac.pos, pac.dir);
 
   /* Render */
   drawDots();
@@ -263,6 +264,7 @@ private void drawDots () {
  * Draw the score, a pacman in the bottom left for every life and the current fruit.
  */
 private void drawHUD () {
+  // Ready
   fill(#ffff00);
   if (waitingInput) {
     text("READY!", 274, 335);
@@ -280,9 +282,9 @@ private void drawHUD () {
     float x = 32 + i*24;
     float y = 34*tileL + 8;
     vertex(x, y, 14, 28);
-    vertex(tileL + x, y, 27, 28);
-    vertex(tileL + x, tileL + y, 27, 41);
-    vertex(x, tileL + y, 14, 41);
+    vertex(20 + x, y, 27, 28);
+    vertex(20 + x, 20 + y, 27, 41);
+    vertex(x, 20 + y, 14, 41);
     endShape();
   }
 }

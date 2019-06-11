@@ -145,10 +145,10 @@ abstract class Ghost {
 
     int cx = currentXOffset();
 
-    vertex(-8, -8, cx, oy);
-    vertex(8, -8, cx+14, oy);
-    vertex(8, 8, cx+14, oy+14);
-    vertex(-8, 8, cx, oy+14);
+    vertex(-10, -10, cx, oy);
+    vertex(10, -10, cx+14, oy);
+    vertex(10, 10, cx+14, oy+14);
+    vertex(-10, 10, cx, oy+14);
 
     endShape();
     popMatrix();

@@ -1,5 +1,6 @@
 class Pinky extends Ghost {
   
+  
   Pinky (PVector pos, Dir dir, PVector scatterTarget, int oy) {
     super(pos, dir, scatterTarget, oy);
   }

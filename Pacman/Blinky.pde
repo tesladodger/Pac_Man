@@ -1,5 +1,6 @@
 class Blinky extends Ghost {
   
+  
   Blinky (PVector pos, Dir dir, PVector scatterTarget, int oy) {
     super(pos, dir, scatterTarget, oy);
   }

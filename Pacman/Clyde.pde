@@ -1,5 +1,6 @@
 class Clyde extends Ghost {
 
+  
   Clyde (PVector pos, Dir dir, PVector scatterTarget, int oy) {
     super(pos, dir, scatterTarget, oy);
   }

@@ -20,7 +20,7 @@ abstract class Ghost {
   private int dotCounter;  // Counter of dots eaten (to exit the house)
 
 
-  /* Ghost sprites and animation */
+  /* Sprites and animation */
 
   private boolean inHouse;       // true if the ghost is still in the house
   private boolean exitingHouse;  // set true when the ghost has to leave the house

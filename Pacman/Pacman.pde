@@ -14,8 +14,9 @@
  */
 
 import java.util.Random;
+import processing.sound.*;
 
-/* ------------------------------------------------------------------- Dimensions and look */
+/* ------------------------------------------------------------------- Look and sound */
 // Tile dimensions. In most places, tileL/2 is hard-coded. I don't plan on changing the
 // dimensions, so not really a problem.
 private static final int tileL = 16;
@@ -23,8 +24,11 @@ private static final int tileL = 16;
 // Background image.
 private PImage backgroundImage;
 
-// Emulogic font (in the data folder)
+// Emulogic font (in the data folder).
 private PFont font;
+
+// Intro song (I recreated with <a>https://beepbox.co/</a> ).
+SoundFile intro;
 
 
 /* ------------------------------------------------------------------- Movement */
@@ -84,6 +88,7 @@ void setup () {
   textAlign(RIGHT);
   font = createFont("emulogic.ttf", 16);
   textFont(font, 16);
+  intro = new SoundFile(this, "introtune.wav");
   
   r = new Random();
   level = 1;
@@ -107,8 +112,11 @@ void setup () {
 void draw () {
   background(0);
   image(backgroundImage, 224, 288, width, height);
+  if (frameCount == 1) intro.play();
+  
   
   /* Logic */
+  
   changeMode();
   int x = pac.move();
   // If pac-man just ate a dot, increase the dot counter of the active ghost in the house.
@@ -124,12 +132,14 @@ void draw () {
   
 
   /* Render */
+  
   drawDots();
   drawHUD();
   pac.render();
   for (Ghost g : ghosts) g.render();
   
   surface.setTitle(int(frameRate) + " fps");
+  
 }
 
 
@@ -345,6 +355,8 @@ private void drawHUD () {
 
 
 void keyPressed () {
+  if (frameCount < 300) return;
+  
   if (keyCode == UP) {
     pac.changeDir(Dir.U);
   }

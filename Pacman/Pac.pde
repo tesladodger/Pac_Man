@@ -2,6 +2,7 @@ class Pac {
 
   // Counter for the points since the start of the game.
   private int points;
+  
 
 
   /* Pacman sprites */
@@ -10,6 +11,7 @@ class Pac {
   private int ox; // x coordinate in the sprite sheet.
   private int oy; // y coordinate in the sprite sheet.
   private boolean stopped;
+  private boolean inPreTurn;
 
 
   /* Movement variables */
@@ -26,6 +28,7 @@ class Pac {
   Pac () {
     ox = oy = 0;
     stopped = true;
+    inPreTurn = false;
 
     pos = new PVector(14*tileL, 26*tileL+8);
     dir = Dir.N;
@@ -45,9 +48,10 @@ class Pac {
       powerPelletStopCounter--;
       return 0;
     }
-    
+
     stopped = false;
-    
+    inPreTurn = false;
+
     int gridX = floor(pos.x/tileL);
     int gridY = floor(pos.y/tileL);
 
@@ -57,8 +61,7 @@ class Pac {
       grid[gridY][gridX] = 8;
       // Stop moving for a frame when a dot is eaten.
       return 1;
-    }
-    else if (grid[gridY][gridX] == 7) {
+    } else if (grid[gridY][gridX] == 7) {
       points += 50;
       grid[gridY][gridX] = 8;
       // Stop moving for 3 frames when a pp is eaten.
@@ -80,9 +83,11 @@ class Pac {
 
     /* Check if it's in turn condition and do it (pre and post turn). */
     if (dir != nextDir &&                                     // It's a turn
-        gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&  // Not in the tunnel
-        grid[gridY + nextDir.y][gridX + nextDir.x] != 0 ) {   // Target is not a wall
-      
+      gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&  // Not in the tunnel
+      grid[gridY + nextDir.y][gridX + nextDir.x] != 0 ) {   // Target is not a wall
+
+      inPreTurn = true;
+
       // In the case of a reverse, just do it and return.
       if ((dir.x == 0 && dir.y == -nextDir.y) || (dir.y == 0 && dir.x == -nextDir.x)) {
         dir = nextDir;
@@ -92,22 +97,22 @@ class Pac {
         pos.add(s);
         return 0;
       }
-      
+
       // Distance from the center of the tile.
-      float dfcx = 7 - (pos.x % 16);
-      float dfcy = 7 - (pos.y % 16);
-      int sdfcx = (int) Math.signum(dfcx);
-      int sdfcy = (int) Math.signum(dfcy);
-      
+      float dfcx = 8 - (pos.x % 16);
+      float dfcy = 8 - (pos.y % 16);
+      float sdfcx = Math.signum(dfcx);
+      float sdfcy = Math.signum(dfcy);
+
       // Update the position.
       pos.x += (abs(dir.x) * sdfcx + nextDir.x) * speed * spercent;
       pos.y += (abs(dir.y) * sdfcy + nextDir.y) * speed * spercent;
-      
+
       // If the centerline is reached, stop the turn.
       if ( (dir.y == 0 && (dfcx < 1.5 && dfcx > -1.5)) || (dir.x == 0 && (dfcy < 1.5 && dfcy > -1.5)) ) {
         dir = nextDir;
       }
-      
+
       return 0;
     }
 
@@ -121,12 +126,11 @@ class Pac {
     }
 
     /* Update pacman's position. */
-      
     float sX = dir.x * speed * spercent;
     float sY = dir.y * speed * spercent;
     PVector s = new PVector(sX, sY);
     pos.add(s);
-    
+
     return 0;
   }
 
@@ -155,7 +159,7 @@ class Pac {
    * Renders pacman and swaps the sprites.
    */
   void render () {
-    
+
     if (!stopped && !waitingInput) {
       swapSprite();
     }
@@ -180,7 +184,18 @@ class Pac {
    */
   void swapSprite () {
     // Changing the y offset to the direction of movement.
-    if (dir == Dir.U) {
+    if (inPreTurn) {
+      if (nextDir == Dir.U) {
+        oy = 0;
+      } else if (nextDir == Dir.D) {
+        oy = 14;
+      } else if (nextDir == Dir.L) {
+        oy = 28;
+      } else if (nextDir == Dir.R) {
+        oy = 42;
+      }
+    }
+    else if (dir == Dir.U) {
       oy = 0;
     } else if (dir == Dir.D) {
       oy = 14;

@@ -3,7 +3,7 @@
  * I try to use the exact logic and behaviors, and approximate the 
  * timings as well as I can.
  * 
- * The sprites are all made by me and the colors are a bit different.
+ * The sprites are all made by me.
  *
  * Given the pixel density of today's screens, the size of a tile
  * was changed to 16*16. Since the grid is 28*36, we get a 448*576
@@ -13,6 +13,7 @@
  * more for simplicity than speed.
  */
 
+import java.util.Random;
 
 /* ------------------------------------------------------------------- Dimensions and look */
 // Tile dimensions. In most places, tileL/2 is hard-coded. I don't plan on changing the
@@ -40,6 +41,8 @@ enum Dir {
   }
 }
 
+Random r;
+
 
 /* ------------------------------------------------------------------- Game state */
 // Current level of the player.
@@ -57,8 +60,14 @@ private int modeCounter;
 // Timer for each mode.
 private long modeStopwatch;
 
+// Timer to free the most prefered ghost from the house.
+private long freeGhostsTimer;
+
 // Before a round, this is set to true. False when pacman starts moving.
 private boolean waitingInput;
+
+// Index of the active ghost in the house.
+private int activeI;
 
 
 /* ------------------------------------------------------------------- Characters */
@@ -76,9 +85,11 @@ void setup () {
   font = createFont("emulogic.ttf", 16);
   textFont(font, 16);
   
+  r = new Random();
   level = 1;
   lives = 2;
   waitingInput = true;
+  activeI = 1;
   
   pac = new Pac();
   ghosts = new Ghost[4];
@@ -86,6 +97,7 @@ void setup () {
   ghosts[1] = new Pinky (new PVector(14*tileL, 17*tileL+8), Dir.U, new PVector(3, 0),   15);
   ghosts[2] = new Inky  (new PVector(12*tileL, 17*tileL+8), Dir.D, new PVector(27, 35), 30);
   ghosts[3] = new Clyde (new PVector(16*tileL, 17*tileL+8), Dir.D, new PVector(0, 35),  45);
+  ghosts[0].inHouse = false;
   
   mode = "scatter";
   modeCounter = 0;
@@ -95,14 +107,21 @@ void setup () {
 void draw () {
   background(0);
   image(backgroundImage, 224, 288, width, height);
-  //frameRate(10);
-
+  
   /* Logic */
   changeMode();
-  pac.move();
-  ghosts[0].updateTarget(pac.pos, pac.dir);
-  ghosts[0].move();
-  ghosts[1].updateTarget(pac.pos, pac.dir);
+  int x = pac.move();
+  // If pac-man just ate a dot, increase the dot counter of the active ghost in the house.
+  if (x == 1) {
+    ghosts[activeI].dotCounter += 1;
+    freeGhostsTimer = System.currentTimeMillis();
+  }
+  // Power pellet, scare the ghosts.
+  else if (x == 2) {
+    
+  }
+  updateGhosts();
+  
 
   /* Render */
   drawDots();
@@ -114,9 +133,47 @@ void draw () {
 }
 
 
+/**
+ * Loops the ghosts to:
+ * - exit the house;
+ * - update the target;
+ * - move;
+ */
+void updateGhosts () {
+  //if (waitingInput) return;
+  
+  // Get the active ghost in the house.
+  activeI = 0;
+  for (int i = ghosts.length-1; i > 0; i--) {
+    if (ghosts[i].inHouse) activeI = i;
+  }
+  
+  // Free the active ghost
+  int timeLimit = level < 5 ? 4000 : 3000;
+  if (ghosts[activeI].inHouse && System.currentTimeMillis() - freeGhostsTimer >= timeLimit) {
+    ghosts[activeI].inHouse = false;
+    ghosts[activeI].exitingHouse = true;
+    freeGhostsTimer = System.currentTimeMillis();
+  }
+  
+  for (Ghost g : ghosts) {
+    // Ghost is in the house, check the conditions to exit.
+    if (g.inHouse && g == ghosts[activeI] && (g.dotCounter >= g.currentDotLimit())) {
+      g.inHouse = false;
+      g.exitingHouse = true;
+    }
+    
+    g.updateTarget(pac.pos, pac.dir);
+    g.move();
+  }
+  
+}
 
-// 0 is a wall, 1 is a dot, an 8 is part of the path without a dot, 7 is a power pellet.
-// Don't forget the x and y coordinates are swapped, the correct usage is grid[y][x].
+
+/*
+ * 0 is a wall, 1 is a dot, an 8 is part of the path without a dot, 7 is a power pellet.
+ * Don't forget the x and y coordinates are swapped, the correct usage is grid[y][x]. 
+ */
 static final int[][] grid = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
@@ -253,7 +310,7 @@ private void drawDots () {
       }
       if (frameCount % 20 < 10) continue;
       if (grid[y][x] == 7) {
-        ellipse(x*tileL+8, y*tileL+8, 12, 12);
+        ellipse(x*tileL+8, y*tileL+8, 13, 13);
       }
     }
   }
@@ -302,7 +359,7 @@ void keyPressed () {
     if (waitingInput) {
       pac.dir = Dir.L;
       waitingInput = false;
-      modeStopwatch = System.currentTimeMillis();
+      modeStopwatch = freeGhostsTimer = System.currentTimeMillis();
     }
   }
   if (keyCode == RIGHT) {
@@ -310,7 +367,7 @@ void keyPressed () {
     if (waitingInput) {
       pac.dir = Dir.R;
       waitingInput = false;
-      modeStopwatch = System.currentTimeMillis();
+      modeStopwatch = freeGhostsTimer = System.currentTimeMillis();
     }
   }
 }

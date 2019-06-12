@@ -1,6 +1,6 @@
 abstract class Ghost {
 
-  
+
   /* Movement variables */
 
   PVector pos;    // Current pixel position
@@ -20,10 +20,11 @@ abstract class Ghost {
   private int dotCounter;  // Counter of dots eaten (to exit the house)
 
 
-  /* Ghost sprites */
+  /* Ghost sprites and animation */
 
-  private boolean inHouse;  // true if the ghost is still in the house
-  
+  private boolean inHouse;       // true if the ghost is still in the house
+  private boolean exitingHouse;  // set true when the ghost has to leave the house
+
   private final PImage ghostsprites = loadImage("ghosts.png");  // Sprite sheet
   private int ox;  // Sprite sheet x offset
   private int oy;  // Sprite sheet y offset
@@ -44,8 +45,10 @@ abstract class Ghost {
     nextGridX = floor(pos.x/tileL) + dir.x;
     nextGridY = floor(pos.y/tileL) + dir.y;
     this.scatterTarget = scatterTarget;
-    this.oy = oy;
     dotCounter = 0;
+    inHouse = true;
+    exitingHouse = false;
+    this.oy = oy;
   }
 
 
@@ -54,8 +57,17 @@ abstract class Ghost {
    */
   void move () {
     if (waitingInput) return;
+    if (exitingHouse) {
+      exitHouse();
+      return;
+    }
+    if (inHouse) {
+      animateInHouse();
+      return;
+    }
     if (mode.equals("scatter")) moveToTarget(scatterTarget);
     else if (mode.equals("chase")) moveToTarget(chaseTarget);
+    else if (mode.equals("scared")) moveToTarget(new PVector(r.nextInt(28), r.nextInt(36)));
   }
 
 
@@ -67,10 +79,9 @@ abstract class Ghost {
    */
   private void moveToTarget (PVector target) {
 
-    /* Check if it's a new tile and it's roughly in the middle of it. */
+    /* Check if it's a new tile and it's roughly in the middle of a tile. */
     if (nextGridX == floor(pos.x/tileL) && nextGridY == floor(pos.y/tileL) &&
       (pos.x % tileL > 6.5 && pos.x % tileL < 9.5) && (pos.y % tileL > 6.5 && pos.y % tileL < 9.5)) {
-      
       /* Change direction. */
       dir = nextDir;
 
@@ -109,7 +120,6 @@ abstract class Ghost {
           }
         }
       }
-      
     }
 
     // Move the ghost.
@@ -117,8 +127,9 @@ abstract class Ghost {
     float sY = dir.y * speed * speedPercentage();
     PVector s = new PVector(sX, sY);
     pos.add(s);
-    
-    if (pos.x < 0) pos.x = width + pos.x;
+
+    // Crossing the tunel.
+    if (pos.x < 0) pos.x += width;
     else if (pos.x > width) pos.x -= width;
   }
 
@@ -131,6 +142,57 @@ abstract class Ghost {
     else if (dir == Dir.D) nextDir = Dir.U;
     else if (dir == Dir.R) nextDir = Dir.L;
     else if (dir == Dir.L) nextDir = Dir.R;
+  }
+
+
+  /**
+   * Just moves the ghost up and down while they're in the house.
+   */
+  private void animateInHouse () {
+    if (pos.y < 270) dir = Dir.D;
+    else if (pos.y > 290) dir = Dir.U;
+    pos.y += dir.y * 1.2;
+  }
+
+
+  /**
+   * Animation of exiting the house.
+   */
+  private void exitHouse () {
+    // Calculate the distance from the center of the screen.
+    float dfc = 224 - pos.x;
+    
+    // If it's not in the center, move to it.
+    if (dfc > 1.5 || dfc < -1.5) {
+      if (dfc > 0) {  // On the left
+        dir = Dir.R;
+        pos.x += 1.2;
+      } else {        // On the right
+        dir = Dir.L;
+        pos.x -= 1.2;
+      }
+      return;
+    }
+
+    // If it's not in position, go up.
+    if (pos.y > 233.5) {
+      dir = Dir.U;
+      pos.y -= 1.2;
+      return;
+    }
+
+    // In position, go to left or right.
+    if (modeCounter == 0) {
+      dir = Dir.L;
+      nextDir = Dir.L;
+    } else {
+      dir = Dir.R;
+      nextDir = Dir.R;
+    }
+
+    nextGridX = floor(pos.x/tileL) + dir.x;
+    nextGridY = floor(pos.y/tileL) + dir.y;
+    exitingHouse = false;
   }
 
 
@@ -162,7 +224,17 @@ abstract class Ghost {
    */
   private int currentXOffset () {
     // Changing the x offset to the direction of movement.
-    if (nextDir == Dir.U) {
+    if (inHouse) {
+      if (dir == Dir.U) {
+        ox = 0;
+      } else if (dir == Dir.D) {
+        ox = 30;
+      } else if (dir == Dir.L) {
+        ox = 60;
+      } else if (dir == Dir.R) {
+        ox = 90;
+      }
+    } else if (nextDir == Dir.U) {
       ox = 0;
     } else if (nextDir == Dir.D) {
       ox = 30;
@@ -188,12 +260,14 @@ abstract class Ghost {
    */
   public abstract void updateTarget (PVector pacpos, Dir pacdir) ;
 
+
   /**
    * Lookup in the levelSpecs table for the current speed.
    *
    * @return current speed;
    */
   public abstract float speedPercentage () ;
+
 
   public abstract int currentDotLimit () ;
 }

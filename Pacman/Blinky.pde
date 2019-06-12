@@ -6,12 +6,14 @@ class Blinky extends Ghost {
   }
   
   
-  public void updateTarget (PVector pacpos, Dir pacdir) {
-    chaseTarget = new PVector(floor(pacpos.x/tileL), floor(pacpos.y/tileL));
+  public void updateTarget () {
+    chaseTarget = new PVector(floor(pac.pos.x/tileL), floor(pac.pos.y/tileL));
   }
   
   
   public float speedPercentage () {
+    // ------------------------------------------------------------------------------------------ todo elroy mode
+    
     if (floor(pos.y/tileL) == 17 && (floor(pos.x/tileL) < 6 || floor(pos.x/tileL) > 21) ) {
       return levelSpecs[level-1][4];
     }

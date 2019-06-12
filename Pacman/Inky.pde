@@ -6,15 +6,15 @@ class Inky extends Ghost {
   }
   
   
-  public void updateTarget (PVector pacpos, Dir pacdir) {
+  public void updateTarget () {
     
     // Position of blinky.
     PVector blinkypos = ghosts[0].pos;
     
     // Two tiles in front of pac-man.
-    PVector pacp2 = new PVector(pacpos.x+pacdir.x*32, pacpos.y+pacdir.y*36);
+    PVector pacp2 = new PVector(pac.pos.x+pac.dir.x*32, pac.pos.y+pac.dir.y*36);
     // Overflow bug.
-    if (pacdir == Dir.U) pacp2.x -= 32;
+    if (pac.dir == Dir.U) pacp2.x -= 32;
     
     // Vector from blinky to pacpp2.
     PVector bl2pac2 = PVector.sub(pacp2, blinkypos);

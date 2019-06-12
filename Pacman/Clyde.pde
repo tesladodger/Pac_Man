@@ -6,9 +6,9 @@ class Clyde extends Ghost {
   }
 
 
-  public void updateTarget (PVector pacpos, Dir pacdir) {
-    float xdist = abs(pacpos.x - (nextGridX*16));
-    float ydist = abs(pacpos.y - (nextGridY*16));
+  public void updateTarget () {
+    float xdist = abs(pac.pos.x - (nextGridX*16));
+    float ydist = abs(pac.pos.y - (nextGridY*16));
     float tempDist =  sqrt(xdist*xdist + ydist*ydist);
     
     // If it gets too close to pac-man (8 tiles), use the scatter target.
@@ -17,7 +17,7 @@ class Clyde extends Ghost {
     }
     // Otherwise, the target is pac-man's tile.
     else {
-      chaseTarget = new PVector(floor(pacpos.x/tileL), floor(pacpos.y/tileL));
+      chaseTarget = new PVector(floor(pac.pos.x/tileL), floor(pac.pos.y/tileL));
     }
   }
 

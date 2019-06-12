@@ -4,14 +4,12 @@ class Pac {
   private int points;
   
 
-
   /* Pacman sprites */
 
   private final PImage pacsprites = loadImage("pacman.png");
   private int ox; // x coordinate in the sprite sheet.
   private int oy; // y coordinate in the sprite sheet.
   private boolean stopped;
-  private boolean inPreTurn;
 
 
   /* Movement variables */
@@ -22,13 +20,13 @@ class Pac {
   private Dir dir;
   // User defined direction.
   private Dir nextDir;
+  // Counts stoped frames after eating a power pellet (3).
   private int powerPelletStopCounter;
 
 
   Pac () {
     ox = oy = 0;
     stopped = true;
-    inPreTurn = false;
 
     pos = new PVector(14*tileL, 26*tileL+8);
     dir = Dir.N;
@@ -38,8 +36,8 @@ class Pac {
 
 
   /**
-   * Checks the dot and pellet collisions, handles crossing the tunnel, turns and pre-turns,
-   * stopping before a wall and moving.
+   * Checks the dot and pellet collisions, handles crossing the tunnel, turns, stopping
+   * before a wall and moving.
    *
    * @return 0 if nothing happened, 1 if just ate a dot, 2 if just ate a power pellet;
    */
@@ -50,7 +48,6 @@ class Pac {
     }
 
     stopped = false;
-    inPreTurn = false;
 
     int gridX = floor(pos.x/tileL);
     int gridY = floor(pos.y/tileL);
@@ -86,7 +83,7 @@ class Pac {
       gridX + nextDir.x >= 0 && gridX + nextDir.x <= 27 &&  // Not in the tunnel
       grid[gridY + nextDir.y][gridX + nextDir.x] != 0 ) {   // Target is not a wall
 
-      inPreTurn = true;
+      //inPreTurn = true;
 
       // In the case of a reverse, just do it and return.
       if ((dir.x == 0 && dir.y == -nextDir.y) || (dir.y == 0 && dir.x == -nextDir.x)) {
@@ -182,20 +179,9 @@ class Pac {
   /**
    * Changes the xy coordinates of the sprite sheet, to animate the movement.
    */
-  void swapSprite () {
+  private void swapSprite () {
     // Changing the y offset to the direction of movement.
-    if (inPreTurn) {
-      if (nextDir == Dir.U) {
-        oy = 0;
-      } else if (nextDir == Dir.D) {
-        oy = 14;
-      } else if (nextDir == Dir.L) {
-        oy = 28;
-      } else if (nextDir == Dir.R) {
-        oy = 42;
-      }
-    }
-    else if (dir == Dir.U) {
+    if (dir == Dir.U) {
       oy = 0;
     } else if (dir == Dir.D) {
       oy = 14;

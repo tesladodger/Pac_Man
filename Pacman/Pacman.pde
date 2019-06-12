@@ -170,7 +170,6 @@ void updateGhosts () {
   }
   
   for (Ghost g : ghosts) {
-    g.updateTarget(pac.pos, pac.dir);
     g.move();
   }
   

@@ -6,10 +6,10 @@ class Pinky extends Ghost {
   }
   
   
-  public void updateTarget (PVector pacpos, Dir pacdir) {
-    chaseTarget = new PVector(floor(pacpos.x/tileL)+pacdir.x*4, floor(pacpos.y/tileL)+pacdir.y*4);
+  public void updateTarget () {
+    chaseTarget = new PVector(floor(pac.pos.x/tileL)+pac.dir.x*4, floor(pac.pos.y/tileL)+pac.dir.y*4);
     // Recreate the overflow bug.
-    if (pacdir == Dir.U) {
+    if (pac.dir == Dir.U) {
       chaseTarget.x -= 4;
     }
   }

@@ -66,7 +66,10 @@ abstract class Ghost {
       return;
     }
     if (mode.equals("scatter")) moveToTarget(scatterTarget);
-    else if (mode.equals("chase")) moveToTarget(chaseTarget);
+    else if (mode.equals("chase")) {
+      updateTarget();
+      moveToTarget(chaseTarget);
+    }
     else if (mode.equals("scared")) moveToTarget(new PVector(r.nextInt(28), r.nextInt(36)));
   }
 
@@ -82,6 +85,7 @@ abstract class Ghost {
     /* Check if it's a new tile and it's roughly in the middle of a tile. */
     if (nextGridX == floor(pos.x/tileL) && nextGridY == floor(pos.y/tileL) &&
       (pos.x % tileL > 6.5 && pos.x % tileL < 9.5) && (pos.y % tileL > 6.5 && pos.y % tileL < 9.5)) {
+       
       /* Change direction. */
       dir = nextDir;
 
@@ -258,7 +262,7 @@ abstract class Ghost {
    * @param pacpos the current position of pac-man;
    * @param pacdir pac-man's direction of travel;
    */
-  public abstract void updateTarget (PVector pacpos, Dir pacdir) ;
+  public abstract void updateTarget () ;
 
 
   /**

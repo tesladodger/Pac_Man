@@ -140,7 +140,6 @@ void draw () {
  * - move;
  */
 void updateGhosts () {
-  //if (waitingInput) return;
   
   // Get the active ghost in the house.
   activeI = 0;
@@ -148,21 +147,19 @@ void updateGhosts () {
     if (ghosts[i].inHouse) activeI = i;
   }
   
-  // Free the active ghost
+  // Free the active ghost if the timer is up or the dot counter is reached.
   int timeLimit = level < 5 ? 4000 : 3000;
-  if (ghosts[activeI].inHouse && System.currentTimeMillis() - freeGhostsTimer >= timeLimit) {
+  if (!waitingInput && ghosts[activeI].inHouse && 
+     ( System.currentTimeMillis() - freeGhostsTimer >= timeLimit || 
+       ghosts[activeI].dotCounter >= ghosts[activeI].currentDotLimit() ) ) {
+      
     ghosts[activeI].inHouse = false;
     ghosts[activeI].exitingHouse = true;
     freeGhostsTimer = System.currentTimeMillis();
+    
   }
   
   for (Ghost g : ghosts) {
-    // Ghost is in the house, check the conditions to exit.
-    if (g.inHouse && g == ghosts[activeI] && (g.dotCounter >= g.currentDotLimit())) {
-      g.inHouse = false;
-      g.exitingHouse = true;
-    }
-    
     g.updateTarget(pac.pos, pac.dir);
     g.move();
   }

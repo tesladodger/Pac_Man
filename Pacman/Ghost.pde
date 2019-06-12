@@ -224,7 +224,7 @@ abstract class Ghost {
    */
   private int currentXOffset () {
     // Changing the x offset to the direction of movement.
-    if (inHouse) {
+    if (inHouse || exitingHouse) {
       if (dir == Dir.U) {
         ox = 0;
       } else if (dir == Dir.D) {

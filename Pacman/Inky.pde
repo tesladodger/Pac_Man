@@ -19,7 +19,7 @@ class Inky extends Ghost {
     // Vector from blinky to pacpp2.
     PVector bl2pac2 = PVector.sub(pacp2, blinkypos);
     
-    // The target is the point two tiles in front of pacman plus the vector from blinky to that point.
+    // The target is the point two tiles in front of pac-man plus the vector from blinky to that point.
     chaseTarget = PVector.add(pacp2, bl2pac2);
     
     chaseTarget.x /= 16;

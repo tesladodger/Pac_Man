@@ -1,5 +1,6 @@
 /*
- * A recriation of the mechanics of the original game, including bugs.
+ * A recriation of the mechanics of the original game, including bugs
+ * (like the overflow bug when pac-man is facing up).
  * I try to use the exact logic and behaviors, and approximate the 
  * timings as well as I can.
  * 
@@ -7,7 +8,7 @@
  *
  * Given the pixel density of today's screens, the size of a tile
  * was changed to 16*16. Since the grid is 28*36, we get a 448*576
- * screen. I had to decrease the tolerances in pacman's movement,
+ * screen. I had to decrease the tolerances in pac-man's movement,
  * because what would be round up in an 8*8 tile isn't in a 16*16, and
  * doesn't look as good. A lot of coordinates and sizes are hard-coded,
  * more for simplicity than speed.
@@ -73,7 +74,7 @@ private long scaredModeStopwatch;
 // Timer to free the most prefered ghost from the house.
 private long freeGhostsTimer;
 
-// Before a round, this is set to true. False when pacman starts moving.
+// Before a round, this is set to true. False when pac-man starts moving.
 private boolean waitingInput;
 
 // Index of the active ghost in the house.
@@ -346,7 +347,7 @@ private void drawDots () {
 
 
 /**
- * Draw the score, a pacman in the bottom left for every life and the current fruit.
+ * Draw the score, a pac-man in the bottom left for every life and the current fruit.
  */
 private void drawHUD () {
   // Player One

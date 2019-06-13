@@ -4,7 +4,7 @@ class Pac {
   private int points;
   
 
-  /* Pacman sprites */
+  /* pac-man sprites */
 
   private final PImage pacsprites = loadImage("pacman.png");
   private int ox; // x coordinate in the sprite sheet.
@@ -122,7 +122,7 @@ class Pac {
       return 0;
     }
 
-    /* Update pacman's position. */
+    /* Update pac-man's position. */
     float sX = dir.x * speed * spercent;
     float sY = dir.y * speed * spercent;
     PVector s = new PVector(sX, sY);
@@ -154,7 +154,7 @@ class Pac {
 
 
   /**
-   * Renders pacman and swaps the sprites.
+   * Renders pac-man and swaps the sprites.
    */
   void render () {
 

@@ -69,8 +69,7 @@ abstract class Ghost {
     else if (mode.equals("chase")) {
       updateTarget();
       moveToTarget(chaseTarget);
-    }
-    else if (mode.equals("scared")) moveToTarget(new PVector(r.nextInt(28), r.nextInt(36)));
+    } else if (mode.equals("scared")) moveToTarget(new PVector(r.nextInt(28), r.nextInt(36)));
   }
 
 
@@ -85,7 +84,7 @@ abstract class Ghost {
     /* Check if it's a new tile and it's roughly in the middle of a tile. */
     if (nextGridX == floor(pos.x/tileL) && nextGridY == floor(pos.y/tileL) &&
       (pos.x % tileL > 6.5 && pos.x % tileL < 9.5) && (pos.y % tileL > 6.5 && pos.y % tileL < 9.5)) {
-       
+
       /* Change direction. */
       dir = nextDir;
 
@@ -139,6 +138,16 @@ abstract class Ghost {
 
 
   /**
+   * Return wheather a ghost is in the same tile as pac-man.
+   *
+   * @return true if the tiles are the same;
+   */
+  boolean sameTileAsPac () {
+    return (floor(pos.x/tileL) == floor(pac.pos.x/tileL)) && (floor(pos.y/tileL) == floor(pac.pos.y/tileL));
+  }
+
+
+  /**
    * Called in the mode changes that require the ghosts to reverse direction.
    */
   void reverseDir () {
@@ -165,7 +174,7 @@ abstract class Ghost {
   private void exitHouse () {
     // Calculate the distance from the center of the screen.
     float dfc = 224 - pos.x;
-    
+
     // If it's not in the center, move to it.
     if (dfc > 1.5 || dfc < -1.5) {
       if (dfc > 0) {  // On the left
@@ -211,10 +220,17 @@ abstract class Ghost {
 
     int cx = currentXOffset();
 
-    vertex(-10, -10, cx, oy);
-    vertex(10, -10, cx+14, oy);
-    vertex(10, 10, cx+14, oy+14);
-    vertex(-10, 10, cx, oy+14);
+    if (mode.equals("scared")) {
+      vertex(-10, -10, cx, 0);
+      vertex(10, -10, cx+14, 0);
+      vertex(10, 10, cx+14, 14);
+      vertex(-10, 10, cx, 14);
+    } else {
+      vertex(-10, -10, cx, oy);
+      vertex(10, -10, cx+14, oy);
+      vertex(10, 10, cx+14, oy+14);
+      vertex(-10, 10, cx, oy+14);
+    }
 
     endShape();
     popMatrix();
@@ -228,24 +244,28 @@ abstract class Ghost {
    */
   private int currentXOffset () {
     // Changing the x offset to the direction of movement.
-    if (inHouse || exitingHouse) {
-      if (dir == Dir.U) {
+    if (!mode.equals("scared")) {
+      if (inHouse || exitingHouse) {
+        if (dir == Dir.U) {
+          ox = 0;
+        } else if (dir == Dir.D) {
+          ox = 30;
+        } else if (dir == Dir.L) {
+          ox = 60;
+        } else if (dir == Dir.R) {
+          ox = 90;
+        }
+      } else if (nextDir == Dir.U) {
         ox = 0;
-      } else if (dir == Dir.D) {
+      } else if (nextDir == Dir.D) {
         ox = 30;
-      } else if (dir == Dir.L) {
+      } else if (nextDir == Dir.L) {
         ox = 60;
-      } else if (dir == Dir.R) {
+      } else if (nextDir == Dir.R) {
         ox = 90;
       }
-    } else if (nextDir == Dir.U) {
-      ox = 0;
-    } else if (nextDir == Dir.D) {
-      ox = 30;
-    } else if (nextDir == Dir.L) {
-      ox = 60;
-    } else if (nextDir == Dir.R) {
-      ox = 90;
+    } else {
+      ox = 120;
     }
 
     if (frameCount % 20 < 10) {

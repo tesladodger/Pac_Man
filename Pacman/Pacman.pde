@@ -17,8 +17,8 @@ import java.util.Random;
 import processing.sound.*;
 
 /* ------------------------------------------------------------------- Look and sound */
-// Tile dimensions. In most places, tileL/2 is hard-coded. I don't plan on changing the
-// dimensions, so not really a problem.
+// Tile length. In most places, tileL and tileL/2 are hard-coded. I don't plan on 
+// changing the dimensions, so it's not really a problem.
 private static final int tileL = 16;
 
 // Background image.
@@ -58,11 +58,17 @@ private int lives;
 // Ghosts can be in 'chase', 'scatter' or 'frightened' mode.
 private String mode;
 
+// When changing to scared mode, save the current mode to change back.
+private String prevMode;
+
 // Counts the mode changes.
 private int modeCounter;
 
 // Timer for each mode.
 private long modeStopwatch;
+
+// Timer for the scared mode.
+private long scaredModeStopwatch;
 
 // Timer to free the most prefered ghost from the house.
 private long freeGhostsTimer;
@@ -85,7 +91,7 @@ void setup () {
   textureMode(IMAGE);
   imageMode(CENTER);
   ellipseMode(CENTER);
-  textAlign(RIGHT);
+  textAlign(CENTER);
   font = createFont("emulogic.ttf", 16);
   textFont(font, 16);
   intro = new SoundFile(this, "introtune.wav");
@@ -112,34 +118,40 @@ void setup () {
 void draw () {
   background(0);
   image(backgroundImage, 224, 288, width, height);
+  surface.setTitle(int(frameRate) + " fps");
   if (frameCount == 1) intro.play();
   
   
   /* Logic */
   
   changeMode();
+  //System.out.println(mode);
   int x = pac.move();
   // If pac-man just ate a dot, increase the dot counter of the active ghost in the house.
   if (x == 1) {
-    ghosts[activeI].dotCounter += 1;
+    if (ghosts[activeI].inHouse) ghosts[activeI].dotCounter += 1;
     freeGhostsTimer = System.currentTimeMillis();
   }
   // Power pellet, scare the ghosts.
   else if (x == 2) {
-    
+    prevMode = mode;
+    mode = "scared";
+    for (Ghost g : ghosts) {
+      g.reverseDir();
+    }
+    scaredModeStopwatch = System.currentTimeMillis();
   }
-  updateGhosts();
   
+  updateGhosts();
+
 
   /* Render */
   
   drawDots();
   drawHUD();
   pac.render();
+  if (frameCount < 200) return;
   for (Ghost g : ghosts) g.render();
-  
-  surface.setTitle(int(frameRate) + " fps");
-  
 }
 
 
@@ -237,6 +249,7 @@ static final int[][] grid = {
  * - Number of flashes before end of frightened mode;
  */
 static final float[][] levelSpecs = new float[][] {
+  {}, // empty index so the lookup is level instead of level-1
   //fruit  bonus pcspd gspd tspd elrd elspd elrd2 elrspd2 frpcspd frgspd frtmms #flashes level
   {     0,  100,  .80, .75, .40,  20,   .80,  10,    .85,    .90,   .50,  6000,      5},  // 1
   {     1,  300,  .90, .85, .45,  30,   .90,  15,    .95,    .95,   .55,  5000,      5},  // 2
@@ -276,7 +289,16 @@ private static final int[][] modeTimes = new int[][] {
  * Changes the ghost modes between chase and scatter.
  */
 private void changeMode () {
-  if (modeCounter == 7 || waitingInput) return;
+  if (waitingInput) return;
+  
+  if (mode.equals("scared") && System.currentTimeMillis() - scaredModeStopwatch > levelSpecs[level][11]) {
+    mode = prevMode;
+    // The time spent in scared mode needs to be returned to the current mode.
+    modeStopwatch += (int) levelSpecs[level][11];
+    return;
+  }
+  
+  if (modeCounter == 7) return;
   
   int index;
   if (level == 1) index = 0;
@@ -327,16 +349,26 @@ private void drawDots () {
  * Draw the score, a pacman in the bottom left for every life and the current fruit.
  */
 private void drawHUD () {
+  // Player One
+  if (frameCount < 200) {
+    fill(#0055ff);
+    text("PLAYER ONE", 224, 240);
+  }
   // Ready
-  fill(#ffff00);
+  
   if (waitingInput) {
-    text("READY!", 274, 335);
+    fill(#ffff00);
+    text("READY!", 224, 335);
   }
   
   // Score
   fill(255);
-  text("HIGH SCORE", 304, 16);
-  if (pac.points > 0) text(pac.points, 272, 32);
+  text("HIGH SCORE", 224, 16);
+  if (pac.points > 0) {
+    textAlign(RIGHT);
+    text(pac.points, 272, 32);
+    textAlign(CENTER);
+  }
   
   // Lives
   for (int i = 0; i < lives; i++) {
@@ -354,7 +386,7 @@ private void drawHUD () {
 
 
 void keyPressed () {
-  if (frameCount < 300) return;
+  if (frameCount < 290) return;
   
   if (keyCode == UP) {
     pac.changeDir(Dir.U);

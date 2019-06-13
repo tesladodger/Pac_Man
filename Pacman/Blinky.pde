@@ -12,12 +12,18 @@ class Blinky extends Ghost {
   
   
   public float speedPercentage () {
-    // ------------------------------------------------------------------------------------------ todo elroy mode
+    // ------------------------------------------------------------------------------------ todo elroy mode
     
-    if (floor(pos.y/tileL) == 17 && (floor(pos.x/tileL) < 6 || floor(pos.x/tileL) > 21) ) {
-      return levelSpecs[level-1][4];
+    // Scared speed.
+    if (mode.equals("scared")) {
+      return levelSpecs[level][10];
     }
-    return levelSpecs[level-1][3];
+    // Tunnel speed.
+    if (floor(pos.y/tileL) == 17 && (floor(pos.x/tileL) < 6 || floor(pos.x/tileL) > 21) ) {
+      return levelSpecs[level][4];
+    }
+    // Normal speed.
+    return levelSpecs[level][3];
   }
   
   

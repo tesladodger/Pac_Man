@@ -138,7 +138,8 @@ class Pac {
    * @return current speed;
    */
   private float speedPercentage () {
-    return levelSpecs[level-1][2];
+    if (mode.equals("scared")) return levelSpecs[level][9];
+    return levelSpecs[level][2];
   }
 
 

@@ -31,6 +31,10 @@ class Clyde extends Ghost {
     if (floor(pos.y/tileL) == 17 && (floor(pos.x/tileL) < 6 || floor(pos.x/tileL) > 21) ) {
       return levelSpecs[level][4];
     }
+    // Dead eyes speed.
+    if (returningHome) {
+      return speed;
+    }
     // Normal speed.
     return levelSpecs[level][3];
   }

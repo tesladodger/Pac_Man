@@ -16,6 +16,7 @@ abstract class Ghost {
 
   private PVector scatterTarget;  // scatter mode target
   PVector chaseTarget;            // chase mode target (updated before moving)
+  private final PVector home = new PVector(14, 15);
 
   private int dotCounter;  // Counter of dots eaten (to exit the house)
 
@@ -24,6 +25,8 @@ abstract class Ghost {
 
   private boolean inHouse;       // true if the ghost is still in the house
   private boolean exitingHouse;  // set true when the ghost has to leave the house
+  boolean returningHome;         // set true after the ghost is killed
+  private float houseXPos;       // x position of the ghost inside the house
 
   private final PImage ghostsprites = loadImage("ghosts.png");  // Sprite sheet
   private int ox;  // Sprite sheet x offset
@@ -48,6 +51,7 @@ abstract class Ghost {
     dotCounter = 0;
     inHouse = true;
     exitingHouse = false;
+    houseXPos = pos.x;
     this.oy = oy;
   }
 
@@ -63,6 +67,10 @@ abstract class Ghost {
     }
     if (inHouse) {
       animateInHouse();
+      return;
+    }
+    if (returningHome) {
+      returnHome();
       return;
     }
     if (mode.equals("scatter")) moveToTarget(scatterTarget);
@@ -107,7 +115,7 @@ abstract class Ghost {
           // Don't turn up on red zones
           if (current == Dir.U && (
             ( nextGridY == 14 && (nextGridX == 12 || nextGridX == 15) ) || 
-            ( nextGridY == 26 && (nextGridX == 12 || nextGridX == 15) ) )) {
+            ( nextGridY == 26 && (nextGridX == 12 || nextGridX == 15) ) ) && !mode.equals("scared")) {
             continue;
           }
 
@@ -210,6 +218,31 @@ abstract class Ghost {
 
 
   /**
+   * Animation to return the ghost's dead eyes to the house.
+   */
+  private void returnHome () {
+    if (pos.x > 222.5 && pos.x < 225.5 && pos.y > 230.5 && pos.y < 280) {
+      if (pos.y < 278.5) {
+        pos.y += 1.2;
+        return;
+      }
+    }
+    if (pos.x > 175 && pos.x < 275 && pos.y > 250 && pos.y < 310) {
+      // distance to house x position
+      float dthxp = houseXPos - pos.x;
+      if (abs(dthxp) > 1.5) {
+        pos.x += 1.2 * Math.signum(dthxp);
+        return;
+      }
+      returningHome = false;
+      inHouse = true;
+      return;
+    }
+    moveToTarget(home);
+  }
+
+
+  /**
    * Renders the ghost with the correct sprite.
    */
   void render () {
@@ -220,7 +253,12 @@ abstract class Ghost {
 
     int cx = currentXOffset();
 
-    if (mode.equals("scared")) {
+    if (returningHome) {
+      vertex(-10, -10, cx, 60);
+      vertex(10, -10, cx+14, 60);
+      vertex(10, 10, cx+14, 74);
+      vertex(-10, 10, cx, 74);
+    } else if (mode.equals("scared")) {
       vertex(-10, -10, cx, 0);
       vertex(10, -10, cx+14, 0);
       vertex(10, 10, cx+14, 14);
@@ -244,7 +282,7 @@ abstract class Ghost {
    */
   private int currentXOffset () {
     // Changing the x offset to the direction of movement.
-    if (!mode.equals("scared")) {
+    if (!mode.equals("scared") || returningHome) {
       if (inHouse || exitingHouse) {
         if (dir == Dir.U) {
           ox = 0;
@@ -268,7 +306,7 @@ abstract class Ghost {
       ox = 120;
     }
 
-    if (frameCount % 20 < 10) {
+    if (returningHome || frameCount % 20 < 10) {
       return ox;
     } else {
       return ox+15;

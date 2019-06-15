@@ -1,3 +1,4 @@
+fix eye sprite y coordinate
 ghosts kill pac-man
 find out what happens to the dot counter after a ghost in eaten
 level increase

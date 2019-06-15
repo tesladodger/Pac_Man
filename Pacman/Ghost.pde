@@ -27,6 +27,7 @@ abstract class Ghost {
   private boolean exitingHouse;  // set true when the ghost has to leave the house
   boolean returningHome;         // set true after the ghost is killed
   private float houseXPos;       // x position of the ghost inside the house
+  private boolean parking;       // animate returning to the initial position
 
   private final PImage ghostsprites = loadImage("ghosts.png");  // Sprite sheet
   private int ox;  // Sprite sheet x offset
@@ -52,6 +53,7 @@ abstract class Ghost {
     inHouse = true;
     exitingHouse = false;
     houseXPos = pos.x;
+    parking = false;
     this.oy = oy;
   }
 
@@ -218,27 +220,31 @@ abstract class Ghost {
 
 
   /**
-   * Animation to return the ghost's dead eyes to the house.
+   * Animation to return the dead ghost's eyes to the house.
    */
   private void returnHome () {
-    if (pos.x > 222.5 && pos.x < 225.5 && pos.y > 230.5 && pos.y < 280) {
+    if (parking) {
       if (pos.y < 278.5) {
         pos.y += 1.2;
         return;
       }
-    }
-    if (pos.x > 175 && pos.x < 275 && pos.y > 250 && pos.y < 310) {
-      // distance to house x position
-      float dthxp = houseXPos - pos.x;
-      if (abs(dthxp) > 1.5) {
-        pos.x += 1.2 * Math.signum(dthxp);
+      
+      float dfhxp = houseXPos - pos.x;
+      if (dfhxp > 1.5 || dfhxp < -1.5) {
+        pos.x += 1.2 * Math.signum(dfhxp);
         return;
       }
-      returningHome = false;
       inHouse = true;
+      returningHome = false;
+      parking = false;
       return;
     }
+    
     moveToTarget(home);
+    
+    if (pos.x > 222.5 && pos.x < 225.5 && pos.y > 230.5 && pos.y < 233.5) {
+      parking = true;
+    }
   }
 
 
